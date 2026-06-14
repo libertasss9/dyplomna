@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Звіт | Аналізатор закономірностей даних</title>
+    <link rel="stylesheet" href="styles.css?v=20260614-1" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <h1>Підсумковий звіт</h1>
+      <div id="topNav" class="top-nav"></div>
+
+      <section class="card result-section">
+        <h2>Автоматичний підсумок</h2>
+        <p class="muted">Ця сторінка збирає результати попередніх етапів: стан даних, якість, метадані, рекомендовані дії та можливі цільові колонки.</p>
+        <button id="summaryReportBtn" type="button">Сформувати підсумок</button>
+        <div id="reportStatus" class="status"></div>
+        <div id="summaryReport" class="report-grid"></div>
+      </section>
+    </main>
+
+    <script src="api.js?v=20260614-1"></script>
+    <script src="common.js?v=20260614-1"></script>
+    <script src="report.js?v=20260614-1"></script>
+  </body>
+</html>

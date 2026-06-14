@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Вхід | Аналізатор закономірностей даних</title>
+    <link rel="stylesheet" href="styles.css?v=20260614-1" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <h1>Аналізатор закономірностей даних</h1>
+      <p class="muted">Клієнт-серверна вебсистема для статистичного аналізу, виявлення зв'язків і порівняння моделей на універсальних CSV-наборах даних.</p>
+
+      <section id="panelLogin" class="card">
+        <h2>Вхід</h2>
+        <div class="form-grid">
+          <div>
+            <label for="loginUsername">Ім'я користувача</label>
+            <input id="loginUsername" minlength="3" required placeholder="Введіть ім'я" autocomplete="username" />
+          </div>
+          <div>
+            <label for="loginPassword">Пароль</label>
+            <input
+              id="loginPassword"
+              type="password"
+              minlength="6"
+              required
+              placeholder="Введіть пароль"
+              autocomplete="current-password"
+            />
+          </div>
+        </div>
+        <button id="loginBtn" type="button" style="margin-top: 12px">Увійти</button>
+        <p class="auth-switch">
+          Немає облікового запису?
+          <button type="button" id="showRegisterBtn" class="link-like">Створити</button>
+        </p>
+      </section>
+
+      <section id="panelRegister" class="card auth-panel-hidden">
+        <h2>Реєстрація</h2>
+        <div class="form-grid">
+          <div>
+            <label for="registerUsername">Ім'я користувача</label>
+            <input id="registerUsername" minlength="3" required placeholder="Оберіть ім'я" autocomplete="username" />
+          </div>
+          <div>
+            <label for="registerPassword">Пароль</label>
+            <input
+              id="registerPassword"
+              type="password"
+              minlength="6"
+              required
+              placeholder="Оберіть пароль"
+              autocomplete="new-password"
+            />
+          </div>
+          <div>
+            <label for="registerPasswordConfirm">Підтвердження пароля</label>
+            <input
+              id="registerPasswordConfirm"
+              type="password"
+              minlength="6"
+              required
+              placeholder="Повторіть пароль"
+              autocomplete="new-password"
+            />
+          </div>
+        </div>
+        <button id="registerBtn" type="button" style="margin-top: 12px">Зареєструватися</button>
+        <p class="auth-switch">
+          Уже маєте обліковий запис?
+          <button type="button" id="showLoginBtn" class="link-like">Увійти</button>
+        </p>
+      </section>
+
+      <div id="authStatus" class="status"></div>
+    </main>
+
+    <script src="api.js?v=20260614-1"></script>
+    <script src="common.js?v=20260614-1"></script>
+    <script src="login.js?v=20260614-1"></script>
+  </body>
+</html>

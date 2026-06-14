@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Аналіз | Аналізатор закономірностей даних</title>
+    <link rel="stylesheet" href="styles.css?v=20260614-1" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <h1>Аналітичні інструменти</h1>
+      <div id="topNav" class="top-nav"></div>
+
+      <section class="card">
+        <h2>Обмеження вибірки</h2>
+        <p class="muted">Для швидкої перевірки можна тимчасово обмежити кількість рядків. Для фінальних висновків краще повернути повний набір.</p>
+        <div class="form-grid">
+          <div>
+            <label for="rowLimit">Кількість рядків</label>
+            <input id="rowLimit" type="number" min="1" placeholder="Порожньо для повного набору" />
+          </div>
+          <div class="button-pair">
+            <button id="applyLimitBtn" type="button">Застосувати</button>
+            <button id="resetLimitBtn" type="button" class="secondary">Повний набір</button>
+          </div>
+        </div>
+        <div id="limitCards" class="metric-grid"></div>
+        <div id="analysisStatus" class="status"></div>
+      </section>
+
+      <section class="card">
+        <h2>Описова статистика</h2>
+        <p class="muted">Тут доречно переглянути базові числові характеристики перед побудовою графіків і моделей.</p>
+        <button id="loadStatsBtn">Завантажити статистику</button>
+        <div id="overviewStatsWrap" class="preview-table" style="display: none; margin-top: 12px">
+          <table>
+            <thead id="overviewStatsHead"></thead>
+            <tbody id="overviewStatsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Розподіл колонки</h2>
+        <div class="form-grid">
+          <div>
+            <label for="distColumn">Колонка</label>
+            <select id="distColumn"></select>
+          </div>
+          <div>
+            <label for="distBins">Інтервали для числових даних</label>
+            <input id="distBins" type="number" min="2" value="10" />
+          </div>
+        </div>
+        <details class="help-panel">
+          <summary>Коли дивитися розподіл?</summary>
+          <div class="help-content">
+            <p>Розподіл допомагає побачити частоти, перекоси, дисбаланс класів і підозрілі значення перед кореляцією або регресією.</p>
+          </div>
+        </details>
+        <button id="distBtn" type="button" style="margin-top: 12px">Показати розподіл</button>
+        <div class="chart-wrap">
+          <canvas id="distChart"></canvas>
+        </div>
+      </section>
+
+      <section class="card result-section">
+        <h2>Парна кореляція</h2>
+        <div class="form-grid">
+          <div>
+            <label for="corrX">Колонка X</label>
+            <select id="corrX"></select>
+          </div>
+          <div>
+            <label for="corrY">Колонка Y</label>
+            <select id="corrY"></select>
+          </div>
+          <div>
+            <label for="corrMethod">Метод</label>
+            <select id="corrMethod">
+              <option value="pearson">Pearson</option>
+              <option value="spearman">Spearman</option>
+            </select>
+          </div>
+        </div>
+        <details class="help-panel">
+          <summary>Як обирати колонки для кореляції?</summary>
+          <div class="help-content">
+            <p>Кореляція показує силу та напрям статистичного зв'язку між двома числовими ознаками. Pearson краще для приблизно лінійного зв'язку, Spearman - для монотонних залежностей і порядкових шкал.</p>
+          </div>
+        </details>
+        <button id="runCorrelationBtn" type="button" style="margin-top: 12px">Обчислити кореляцію</button>
+        <div id="correlationCards" class="metric-grid"></div>
+        <div class="chart-wrap">
+          <canvas id="correlationChart"></canvas>
+        </div>
+        <div class="result-block">
+          <h3>Автоматичні висновки</h3>
+          <div id="correlationInsights" class="insight-list"></div>
+        </div>
+      </section>
+
+      <section class="card result-section">
+        <h2>Матриця кореляцій</h2>
+        <p class="muted">Heatmap показує силу зв'язків між числовими колонками. Для читабельності система бере перші числові колонки поточного набору.</p>
+        <div class="form-grid">
+          <div>
+            <label for="matrixMethod">Метод</label>
+            <select id="matrixMethod">
+              <option value="pearson">Pearson</option>
+              <option value="spearman">Spearman</option>
+            </select>
+          </div>
+          <div>
+            <button id="matrixBtn" type="button">Побудувати heatmap</button>
+          </div>
+        </div>
+        <div id="correlationMatrixWrap" class="preview-table heatmap-table" style="margin-top: 12px"></div>
+      </section>
+
+      <section class="card result-section">
+        <h2>Лінійна регресія</h2>
+        <div class="form-grid">
+          <div>
+            <label for="regX">Ознака</label>
+            <select id="regX"></select>
+          </div>
+          <div>
+            <label for="regY">Цільова колонка</label>
+            <select id="regY"></select>
+          </div>
+        </div>
+        <details class="help-panel">
+          <summary>Як обирати колонки для регресії?</summary>
+          <div class="help-content">
+            <p>Лінійна регресія оцінює, як зміна однієї числової ознаки пов'язана зі зміною числової цілі. Якщо зв'язок нелінійний або є багато викидів, результат потрібно трактувати обережно.</p>
+          </div>
+        </details>
+        <button id="runRegressionBtn" type="button" style="margin-top: 12px">Побудувати регресію</button>
+        <div id="regressionCards" class="metric-grid"></div>
+        <div class="chart-wrap">
+          <canvas id="regressionChart"></canvas>
+        </div>
+        <div class="result-block">
+          <h3>Автоматичні висновки</h3>
+          <div id="regressionInsights" class="insight-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="api.js?v=20260614-1"></script>
+    <script src="common.js?v=20260614-1"></script>
+    <script src="analysis.js?v=20260614-1"></script>
+  </body>
+</html>

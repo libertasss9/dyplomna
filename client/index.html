@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Перенаправлення...</title>
+  </head>
+  <body>
+    <p>Перенаправлення...</p>
+    <script src="api.js?v=20260614-1"></script>
+    <script>
+      window.location.replace(getToken() ? "upload.html?v=20260614-1" : "login.html");
+    </script>
+  </body>
+</html>

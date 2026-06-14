@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Моделі | Аналізатор закономірностей даних</title>
+    <link rel="stylesheet" href="styles.css?v=20260614-1" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <h1>Порівняння моделей</h1>
+      <div id="topNav" class="top-nav"></div>
+
+      <section class="card result-section">
+        <h2>Класифікаційні моделі</h2>
+        <p class="muted">Оберіть категоріальну цільову колонку. Система порівняє Logistic Regression і Random Forest, а також сформує текстові висновки.</p>
+        <div class="form-grid">
+          <div>
+            <label for="modelTarget">Цільова колонка</label>
+            <select id="modelTarget"></select>
+          </div>
+          <div>
+            <label for="modelTaskType">Режим моделювання</label>
+            <select id="modelTaskType">
+              <option value="auto">Автоматично</option>
+              <option value="classification">Класифікація</option>
+              <option value="regression">Регресія</option>
+            </select>
+          </div>
+        </div>
+        <div id="targetExplanation" class="insight-list compact-list"></div>
+        <details class="help-panel">
+          <summary>Як обрати цільову колонку для моделі?</summary>
+          <div class="help-content">
+            <p>Цільова колонка має містити обмежену кількість класів, а не унікальне значення для кожного рядка. Якщо класи закодовані числами, їх зміст варто описати у словнику колонок на сторінці профілю.</p>
+          </div>
+        </details>
+        <section class="embedded-panel">
+          <h3>Ознаки для моделювання</h3>
+          <p class="muted">Позначені колонки буде передано моделі. Джерело створеної цільової колонки, ідентифікатори та технічні поля система виключає автоматично.</p>
+          <div class="button-row compact-actions">
+            <button id="selectRecommendedFeaturesBtn" type="button" class="secondary">Рекомендований набір</button>
+            <button id="selectAllFeaturesBtn" type="button" class="secondary">Обрати всі доступні</button>
+          </div>
+          <div id="featureChecklist" class="feature-checklist"></div>
+          <div id="featureWarnings" class="insight-list compact-list"></div>
+        </section>
+        <button id="runModelBtn" style="margin-top: 12px">Запустити моделі</button>
+        <div id="modelStatus" class="status"></div>
+        <div id="modelProgress" class="processing-panel hidden" aria-live="polite">
+          <div class="processing-header">
+            <span class="spinner" aria-hidden="true"></span>
+            <div>
+              <strong id="modelProgressTitle">Підготовка моделювання</strong>
+              <span id="modelProgressElapsed">Минуло 0 с</span>
+            </div>
+          </div>
+          <div class="progress-track">
+            <span id="modelProgressBar"></span>
+          </div>
+          <div id="modelProgressSteps" class="progress-steps"></div>
+          <p id="modelProgressHint" class="muted">Для великих CSV навчання Random Forest може тривати довше. Не закривайте сторінку до появи результатів.</p>
+        </div>
+        <div id="modelSummaryCards" class="metric-grid"></div>
+        <div class="chart-wrap chart-wrap-compact" id="classDistributionWrap">
+          <canvas id="classDistributionChart"></canvas>
+        </div>
+        <div class="result-block">
+          <h3>Автоматичні висновки</h3>
+          <div id="modelInsights" class="insight-list"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Метрики</h2>
+        <details class="help-panel">
+          <summary>Як читати метрики моделей?</summary>
+          <div class="help-content">
+            <ul>
+              <li><strong>Accuracy</strong> показує загальну частку правильних прогнозів, але може бути оманливою при дисбалансі класів.</li>
+              <li><strong>Balanced accuracy</strong> усереднює якість по класах і краще підходить, коли один клас значно частіший.</li>
+              <li><strong>Macro F1</strong> однаково враховує всі класи, тому корисна для дослідницького порівняння.</li>
+              <li><strong>Weighted F1</strong> враховує частоту класів і показує якість з урахуванням реального розподілу даних.</li>
+            </ul>
+          </div>
+        </details>
+        <div class="chart-wrap chart-wrap-compact">
+          <canvas id="modelChart"></canvas>
+        </div>
+        <div class="preview-table">
+          <table>
+            <thead>
+              <tr id="modelMetricsHead">
+                <th>Модель</th>
+                <th>Accuracy</th>
+                <th>Balanced accuracy</th>
+                <th>Macro F1</th>
+                <th>Weighted F1</th>
+              </tr>
+            </thead>
+            <tbody id="modelMetricsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Важливість ознак</h2>
+        <div class="chart-wrap">
+          <canvas id="importanceChart"></canvas>
+        </div>
+        <div class="preview-table" style="margin-top: 12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Ознака</th>
+                <th>Важливість</th>
+              </tr>
+            </thead>
+            <tbody id="importanceBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Матриця помилок</h2>
+        <p class="muted">Показується для першої моделі зі списку метрик. Рядки - фактичні класи, колонки - прогнозовані.</p>
+        <div class="preview-table heatmap-table">
+          <table>
+            <thead id="confusionHead"></thead>
+            <tbody id="confusionBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="api.js?v=20260614-1"></script>
+    <script src="common.js?v=20260614-1"></script>
+    <script src="modeling.js?v=20260614-1"></script>
+  </body>
+</html>

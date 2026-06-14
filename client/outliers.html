@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Викиди | Аналізатор закономірностей даних</title>
+    <link rel="stylesheet" href="styles.css?v=20260614-1" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <h1>Викиди</h1>
+      <div id="topNav" class="top-nav"></div>
+
+      <section class="card result-section">
+        <h2>Виявлення викидів за Z-score</h2>
+        <p class="muted">Цей етап допомагає знайти підозрілі числові значення перед кореляцією, регресією та моделюванням.</p>
+        <div class="form-grid">
+          <div>
+            <label for="outlierColumn">Колонка</label>
+            <select id="outlierColumn"></select>
+          </div>
+          <div>
+            <label for="outlierThreshold">Поріг Z-score</label>
+            <input id="outlierThreshold" type="number" min="0.5" step="0.5" value="3" />
+          </div>
+        </div>
+        <details class="help-panel">
+          <summary>Як трактувати викиди?</summary>
+          <div class="help-content">
+            <p>Z-score показує, наскільки значення відхиляється від середнього у стандартних відхиленнях. Викиди можуть бути помилками введення або важливими рідкісними випадками, тому їх не слід автоматично видаляти без перевірки.</p>
+          </div>
+        </details>
+        <button id="outlierRunBtn" style="margin-top: 12px">Виявити викиди</button>
+        <div id="outlierStatus" class="status"></div>
+        <div id="outlierCards" class="metric-grid"></div>
+        <div id="outlierBoxplot" class="boxplot-wrap"></div>
+        <div class="preview-table" style="margin-top: 12px">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Значення-викид</th>
+              </tr>
+            </thead>
+            <tbody id="outlierValuesBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="api.js?v=20260614-1"></script>
+    <script src="common.js?v=20260614-1"></script>
+    <script src="outliers.js?v=20260614-1"></script>
+  </body>
+</html>

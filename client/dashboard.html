@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Профіль | Аналізатор закономірностей даних</title>
+    <link rel="stylesheet" href="styles.css?v=20260614-1" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <h1>Профіль набору даних</h1>
+      <div id="topNav" class="top-nav"></div>
+
+      <section class="card result-section">
+        <h2>Структура і якість</h2>
+        <p class="muted">На цьому етапі варто зрозуміти, з чого складається CSV, які колонки можуть бути цільовими і які обмеження має набір даних.</p>
+        <button id="profileBtn">Оновити профіль</button>
+        <div id="profileCards" class="metric-grid"></div>
+        <div class="result-block">
+          <h3>Попередження якості</h3>
+          <div id="qualityWarnings" class="insight-list"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Потенційні цільові колонки</h2>
+        <p class="muted">Система пропонує колонки з невеликою кількістю класів. Остаточний вибір залежить від мети дослідження.</p>
+        <div class="preview-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Колонка</th>
+                <th>Класів</th>
+                <th>Покриття</th>
+                <th>Дисбаланс</th>
+                <th>Найчастіші значення</th>
+              </tr>
+            </thead>
+            <tbody id="targetProfileBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Пропущені значення</h2>
+        <p class="muted">Детальна таблиця допомагає вирішити, які колонки потребують очищення або пояснення перед аналізом.</p>
+        <button id="missingBtn">Перевірити пропуски</button>
+        <div id="dashboardStatus" class="status"></div>
+        <div class="chart-wrap chart-wrap-compact">
+          <canvas id="missingChart"></canvas>
+        </div>
+        <div class="preview-table" style="margin-top: 10px">
+          <table>
+            <thead>
+              <tr><th>Колонка</th><th>Кількість пропусків</th><th>% пропусків</th></tr>
+            </thead>
+            <tbody id="missingBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card result-section">
+        <h2>Словник колонок</h2>
+        <p class="muted">Опишіть зміст колонок, їх роль у дослідженні та коди класів. Це універсальні метадані для будь-якого CSV.</p>
+        <div class="form-grid">
+          <div>
+            <label for="metaColumn">Колонка</label>
+            <select id="metaColumn"></select>
+          </div>
+          <div>
+            <label for="metaRole">Роль</label>
+            <select id="metaRole">
+              <option value="unspecified">Не визначено</option>
+              <option value="feature">Ознака</option>
+              <option value="target">Ціль</option>
+              <option value="identifier">Ідентифікатор</option>
+              <option value="ignore">Не використовувати</option>
+              <option value="sensitive">Чутлива ознака</option>
+              <option value="group">Групувальна ознака</option>
+            </select>
+          </div>
+          <div>
+            <label for="metaSourceColumn">Колонка-джерело для класу</label>
+            <select id="metaSourceColumn"></select>
+          </div>
+        </div>
+        <label for="metaDescription">Опис колонки</label>
+        <textarea id="metaDescription" rows="3" placeholder="Що означає ця колонка і як її варто трактувати?"></textarea>
+        <label for="metaClasses">Опис кодів класів</label>
+        <textarea id="metaClasses" rows="4" placeholder="Формат: код = опис. Наприклад: 0 = клас без події"></textarea>
+        <div class="button-row">
+          <button id="saveMetaBtn" type="button">Зберегти опис</button>
+          <button id="clearMetaFormBtn" type="button" class="secondary">Очистити форму</button>
+        </div>
+        <div id="metadataStatus" class="status"></div>
+        <div class="preview-table" style="margin-top: 12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Колонка</th>
+                <th>Автоматична роль</th>
+                <th>Роль користувача</th>
+                <th>Джерело класу</th>
+                <th>Опис</th>
+                <th>Коди класів</th>
+              </tr>
+            </thead>
+            <tbody id="metadataBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="api.js?v=20260614-1"></script>
+    <script src="common.js?v=20260614-1"></script>
+    <script src="dashboard.js?v=20260614-1"></script>
+  </body>
+</html>

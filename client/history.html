@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Історія | Аналізатор закономірностей даних</title>
+    <link rel="stylesheet" href="styles.css?v=20260614-1" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <h1>Історія аналізу</h1>
+      <div id="topNav" class="top-nav"></div>
+
+      <section class="card">
+        <button id="refreshHistoryBtn">Оновити історію</button>
+        <div id="historyStatus" class="status"></div>
+      </section>
+
+      <section class="card">
+        <div class="preview-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Дія</th>
+                <th>Параметри</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="api.js?v=20260614-1"></script>
+    <script src="common.js?v=20260614-1"></script>
+    <script src="history.js?v=20260614-1"></script>
+  </body>
+</html>

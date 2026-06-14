@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Очищення | Аналізатор закономірностей даних</title>
+    <link rel="stylesheet" href="styles.css?v=20260614-1" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <h1>Очищення набору даних</h1>
+      <div id="topNav" class="top-nav"></div>
+
+      <section class="card result-section">
+        <h2>План перевірки якості</h2>
+        <p class="muted">Перед аналізом система перевіряє пропуски, дублікати, нульові значення, константні поля та колонки, які можуть заважати моделюванню.</p>
+        <button id="refreshPlanBtn" type="button">Оновити план очищення</button>
+        <div id="cleanStatus" class="status"></div>
+        <div id="cleanSummaryCards" class="metric-grid"></div>
+        <div id="cleanRecommendations" class="insight-list"></div>
+      </section>
+
+      <section class="card">
+        <h2>Правила очищення</h2>
+        <p class="muted">Застосовуйте тільки ті дії, зміст яких відповідає вашим даним. Оригінальний CSV не змінюється, очищення працює з поточною копією в системі.</p>
+
+        <div class="clean-options">
+          <label class="check-row">
+            <input id="dropDuplicates" type="checkbox" checked />
+            <span>Видалити повні дублікати рядків</span>
+          </label>
+          <label class="check-row">
+            <input id="dropConstants" type="checkbox" checked />
+            <span>Видалити константні колонки</span>
+          </label>
+          <label class="check-row">
+            <input id="dropHighCardinality" type="checkbox" />
+            <span>Виключити текстові колонки з дуже великою кількістю унікальних значень</span>
+          </label>
+        </div>
+
+        <div class="form-grid">
+          <div>
+            <label for="missingStrategy">Обробка пропущених значень</label>
+            <select id="missingStrategy">
+              <option value="none">Не змінювати пропуски</option>
+              <option value="smart_fill">Заповнити: числові медіаною, категоріальні модою</option>
+              <option value="fill_mean">Заповнити числові середнім, категоріальні модою</option>
+              <option value="drop_rows">Видалити рядки з пропусками</option>
+            </select>
+          </div>
+          <div>
+            <label for="dropColumnSearch">Колонки для ручного виключення</label>
+            <input id="dropColumnSearch" type="search" placeholder="Пошук колонки для виключення" />
+          </div>
+        </div>
+        <div id="dropColumnChoices" class="column-checklist"></div>
+
+        <details class="help-panel">
+          <summary>Як працювати з нулями в даних</summary>
+          <div class="help-content">
+            <p>Нуль не завжди є помилкою. Для бінарних ознак 0 зазвичай означає окремий клас, а для деяких вимірювань може бути прихованим пропуском.</p>
+            <p>Позначайте нулі як пропуски тільки тоді, коли за змістом колонки нуль неможливий або означає відсутність вимірювання.</p>
+          </div>
+        </details>
+
+        <div class="result-block">
+          <h3>Потенційні нульові пропуски</h3>
+          <div id="zeroCandidates" class="choice-list"></div>
+        </div>
+
+        <div class="button-row">
+          <button id="applyCleanBtn" type="button">Застосувати очищення</button>
+          <a class="text-button" href="dashboard.html?v=20260614-1">Перейти до профілю</a>
+        </div>
+        <div id="cleanResult" class="insight-list"></div>
+      </section>
+
+      <section class="card result-section">
+        <h2>Ручне створення класів</h2>
+        <p class="muted">Користувач сам визначає, які значення мають належати до кожного класу. Це зберігає універсальність системи й не прив'язує результат до припущень алгоритму.</p>
+        <div class="form-grid">
+          <div>
+            <label for="classSource">Колонка-джерело</label>
+            <select id="classSource"></select>
+          </div>
+          <div>
+            <label for="classMode">Тип правил</label>
+            <select id="classMode">
+              <option value="ranges">Діапазони числових значень</option>
+              <option value="values">Групування конкретних значень</option>
+            </select>
+          </div>
+          <div>
+            <label for="newClassColumn">Назва класової колонки</label>
+            <input id="newClassColumn" type="text" placeholder="Наприклад: target_class" />
+          </div>
+        </div>
+
+        <div id="classSourceInfo" class="source-profile"></div>
+
+        <details class="help-panel" open>
+          <summary>Формат ручних правил</summary>
+          <div class="help-content">
+            <p>Для діапазонів використовуйте формат: код | мінімум | максимум | опис. Порожній мінімум або максимум означає відкриту межу.</p>
+            <p>Для значень використовуйте формат: код | значення1, значення2 | опис. Усі значення порівнюються як текст, тому коди 0, 1, 2 теж можна групувати вручну.</p>
+          </div>
+        </details>
+
+        <label for="classRules">Правила класів</label>
+        <textarea id="classRules" class="rules-textarea" rows="8" placeholder="0 | 0 | 24.99 | Низьке значення&#10;1 | 25 | 29.99 | Середнє значення&#10;2 | 30 | | Високе значення"></textarea>
+
+        <div class="button-row">
+          <button id="fillClassTemplateBtn" type="button" class="secondary">Заповнити приклад правилами</button>
+          <button id="createClassesBtn" type="button">Створити класову колонку</button>
+        </div>
+        <div id="classStatus" class="status"></div>
+        <div id="classResult" class="insight-list"></div>
+      </section>
+    </main>
+
+    <script src="api.js?v=20260614-1"></script>
+    <script src="common.js?v=20260614-1"></script>
+    <script src="clean.js?v=20260614-1"></script>
+  </body>
+</html>

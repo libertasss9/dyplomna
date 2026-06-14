@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Дані | Аналізатор закономірностей даних</title>
+    <link rel="stylesheet" href="styles.css?v=20260614-1" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <h1>Завантаження даних</h1>
+      <div id="topNav" class="top-nav"></div>
+
+      <section class="card">
+        <h2>CSV-набір даних</h2>
+        <p class="muted">Система працює з універсальними табличними даними, автоматично визначає типи колонок і формує перші попередження якості.</p>
+        <label for="fileInput">Файл набору даних</label>
+        <input id="fileInput" type="file" accept=".csv" />
+        <button id="uploadBtn" style="margin-top: 12px">Завантажити</button>
+        <div id="uploadStatus" class="status"></div>
+        <div id="uploadSummaryCards" class="metric-grid"></div>
+        <div id="uploadWarnings" class="insight-list"></div>
+        <div id="uploadNextStep" class="next-step"></div>
+      </section>
+
+      <section class="card">
+        <h2>Попередній перегляд</h2>
+        <div class="preview-table">
+          <table>
+            <thead id="previewHead"></thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="api.js?v=20260614-1"></script>
+    <script src="common.js?v=20260614-1"></script>
+    <script src="upload.js?v=20260614-1"></script>
+  </body>
+</html>
