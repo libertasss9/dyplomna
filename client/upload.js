@@ -44,7 +44,7 @@ function renderNextStep(data) {
   const container = document.getElementById("uploadNextStep");
   clearElement(container);
   const link = document.createElement("a");
-  link.href = "clean.html?v=20260614-1";
+  link.href = "clean.html?v=20260621-2";
   link.textContent = data.target_suggestions?.length
     ? "Перейти до очищення та перевірити якість даних"
     : "Перейти до очищення та за потреби створити класову колонку";

@@ -139,6 +139,30 @@ class AppRoutesTest(unittest.TestCase):
         self.assertTrue(report["workflow"])
         self.assertTrue(report["recommended_actions"])
 
+    def test_workflow_status_uses_current_dataset_actions(self):
+        headers = self.auth_headers()
+        self.upload_csv(headers)
+
+        initial = self.client.get("/workflow/status", headers=headers)
+        initial_steps = initial.get_json()["steps"]
+        self.assertEqual(initial.status_code, 200)
+        self.assertEqual(initial_steps[0]["status"], "done")
+        self.assertEqual(initial_steps[1]["status"], "pending")
+        self.assertEqual(initial_steps[2]["status"], "pending")
+
+        self.client.get("/cleaning/plan", headers=headers)
+        self.client.post(
+            "/metadata/column",
+            headers=headers,
+            json={"column": "target", "semantic_role": "target", "description": "Target column"},
+        )
+
+        updated = self.client.get("/workflow/status", headers=headers)
+        updated_steps = updated.get_json()["steps"]
+        self.assertEqual(updated_steps[1]["status"], "done")
+        self.assertEqual(updated_steps[2]["status"], "done")
+        self.assertEqual(updated_steps[4]["status"], "done")
+
     def test_cleaning_plan_apply_and_create_class_column(self):
         headers = self.auth_headers()
         csv_bytes = (

@@ -23,13 +23,32 @@ def preview_records(df, limit=10):
     return preview.to_dict(orient="records")
 
 
-def workflow_summary(profile, metadata, history_items):
+def workflow_summary(profile, metadata, history_items, states=None):
+    states = states or {}
     actions = {item["action"] for item in history_items}
     coverage = metadata_coverage(metadata, profile["columns"])
     quality_done = actions.intersection({"cleaning-apply", "class-create"})
+    quality_checked = actions.intersection({"cleaning-plan", "cleaning-apply", "class-create"})
     exploration_done = actions.intersection(
-        {"statistics", "histogram", "correlation", "regression", "outliers", "target-correlation"}
+        {
+            "statistics",
+            "histogram",
+            "correlation",
+            "correlation-matrix",
+            "regression",
+            "outliers",
+            "target-correlation",
+        }
     )
+    analysis_done = bool(states.get("analysis/latest")) or bool(states.get("risk/latest")) or bool(exploration_done)
+    target_defined = any(
+        metadata.get(column, {}).get("semantic_role") == "target"
+        for column in profile["columns"]
+    )
+    target_defined = target_defined or bool(states.get("risk/latest")) or bool(states.get("modeling/latest"))
+    metadata_status = "done" if coverage["documented_columns"] else "pending"
+    report_done = bool(states.get("report/latest")) or "summary-report" in actions
+
     return [
         {
             "step": "Набір даних прийнято",
@@ -38,16 +57,20 @@ def workflow_summary(profile, metadata, history_items):
         },
         {
             "step": "Якість даних перевірено",
-            "status": "done" if quality_done else "pending",
+            "status": "done" if quality_checked else "pending",
             "detail": (
                 "Правила очищення або створення класів уже застосовувалися"
                 if quality_done
-                else "Перевірте пропуски, дублікати, нулі та потребу у класовій колонці"
+                else (
+                    "План якості даних уже сформовано"
+                    if quality_checked
+                    else "Перевірте пропуски, дублікати, нулі та потребу у класовій колонці"
+                )
             ),
         },
         {
             "step": "Зміст колонок описано",
-            "status": "done",
+            "status": metadata_status,
             "detail": (
                 f"{len(profile['quality_warnings'])} повідомлень якості; "
                 f"описано {coverage['documented_columns']} з {coverage['columns_count']} колонок"
@@ -55,37 +78,37 @@ def workflow_summary(profile, metadata, history_items):
         },
         {
             "step": "Закономірності досліджено",
-            "status": "done" if exploration_done else "pending",
+            "status": "done" if analysis_done else "pending",
             "detail": (
                 "Є статистика, розподіли, викиди, кореляції або рейтинг ознак"
-                if exploration_done
+                if analysis_done
                 else "Побудуйте розподіли, heatmap кореляцій, перевірку викидів або рейтинг ознак"
             ),
         },
         {
             "step": "Ціль аналізу визначено",
-            "status": "done" if "target-correlation" in actions else "pending",
+            "status": "done" if target_defined else "pending",
             "detail": (
-                "Рейтинг ознак уже побудовано"
-                if "target-correlation" in actions
+                "Цільову колонку визначено у словнику, рейтингу або моделюванні"
+                if target_defined
                 else "Оберіть цільову колонку та тип задачі"
             ),
         },
         {
             "step": "Моделі оцінено",
-            "status": "done" if "modeling-compare" in actions else "pending",
+            "status": "done" if states.get("modeling/latest") or "modeling-compare" in actions else "pending",
             "detail": (
                 "Моделі вже порівнювалися"
-                if "modeling-compare" in actions
+                if states.get("modeling/latest") or "modeling-compare" in actions
                 else "Порівняйте моделі класифікації або регресії"
             ),
         },
         {
             "step": "Висновок сформовано",
-            "status": "done" if "summary-report" in actions else "pending",
+            "status": "done" if report_done else "pending",
             "detail": (
                 "Звіт уже формувався"
-                if "summary-report" in actions
+                if report_done
                 else "Сформуйте підсумковий звіт після аналізу"
             ),
         },
@@ -125,7 +148,7 @@ def _sample_overview(sample_info):
     return f"Використовується повний набір даних: {sample_info.get('current_rows', 0)} рядків."
 
 
-def build_summary_report(profile, metadata, latest_model_payload, history_items, sample_info=None):
+def build_summary_report(profile, metadata, latest_model_payload, history_items, sample_info=None, states=None):
     coverage = metadata_coverage(metadata, profile["columns"])
     target_summaries = []
 
@@ -161,7 +184,7 @@ def build_summary_report(profile, metadata, latest_model_payload, history_items,
 
     return {
         "overview": overview,
-        "workflow": workflow_summary(profile, metadata, history_items),
+        "workflow": workflow_summary(profile, metadata, history_items, states),
         "quality_warnings": profile["quality_warnings"],
         "recommended_actions": recommended_actions(profile, metadata),
         "target_summaries": target_summaries,

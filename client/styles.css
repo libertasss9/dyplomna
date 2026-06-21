@@ -674,45 +674,51 @@ button:disabled {
 
 .workflow-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
-  gap: 8px;
-  margin: 4px 0 18px;
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 6px;
+  margin: 2px 0 14px;
 }
 
 .workflow-step {
-  min-height: 62px;
+  min-height: 46px;
   min-width: 0;
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-columns: 23px minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
-  padding: 10px;
+  gap: 6px;
+  padding: 7px 8px;
   border: 1px solid #c8d4df;
-  border-radius: 8px;
+  border-radius: 7px;
   background: rgba(244, 246, 248, 0.82);
   color: #4a5868;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 6px 14px rgba(72, 92, 112, 0.08);
 }
 
 .workflow-step strong {
   min-width: 0;
-  font-size: 13px;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
-  word-break: normal;
-  hyphens: auto;
+  font-size: 12px;
+  line-height: 1.15;
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: normal;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .workflow-copy {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 1px;
 }
 
 .workflow-copy small {
   color: var(--muted);
-  font-size: 11px;
-  line-height: 1.25;
+  font-size: 10.5px;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nav-footer {
@@ -738,15 +744,15 @@ button:disabled {
 }
 
 .workflow-index {
-  width: 28px;
-  height: 28px;
+  width: 23px;
+  height: 23px;
   display: grid;
   place-items: center;
   border-radius: 999px;
   background: #dce5ee;
   color: var(--primary-dark);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .workflow-step.done {
@@ -759,16 +765,33 @@ button:disabled {
   color: #ffffff;
 }
 
-.workflow-step.active {
-  border-color: #9aaeca;
-  background: #dfe9f4;
-  color: var(--primary-dark);
-  box-shadow: 0 10px 22px rgba(83, 111, 149, 0.16);
+.workflow-step.pending {
+  border-color: #c8d4df;
+  background: rgba(244, 246, 248, 0.82);
 }
 
-.workflow-step.active .workflow-index {
+.workflow-step.pending .workflow-index {
+  background: #dce5ee;
+  color: var(--primary-dark);
+}
+
+.workflow-step.current {
+  border-color: #9aaeca;
+  box-shadow: 0 8px 18px rgba(83, 111, 149, 0.14);
+}
+
+.workflow-step.current:not(.done) {
+  background: #dfe9f4;
+  color: var(--primary-dark);
+}
+
+.workflow-step.current:not(.done) .workflow-index {
   background: var(--primary);
   color: #ffffff;
+}
+
+.workflow-step.current-done {
+  box-shadow: 0 8px 18px rgba(65, 104, 93, 0.14);
 }
 
 .insight-list {

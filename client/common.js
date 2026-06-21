@@ -1,4 +1,4 @@
-const DEFAULT_PRIVATE_PAGE = "upload.html?v=20260614-1";
+const DEFAULT_PRIVATE_PAGE = "upload.html?v=20260621-2";
 const LOGIN_PAGE = "login.html";
 const PUBLIC_PAGES = new Set([LOGIN_PAGE]);
 const DATASET_STATE_KEYS = [
@@ -85,7 +85,7 @@ function renderWorkflow(activePage) {
     return;
   }
 
-  const stepByPage = {
+  const workflowPageIndex = {
     upload: 0,
     clean: 1,
     dashboard: 2,
@@ -96,7 +96,7 @@ function renderWorkflow(activePage) {
     report: 6,
     history: 6
   };
-  const activeIndex = stepByPage[activePage] ?? 0;
+  const currentIndex = workflowPageIndex[activePage] ?? -1;
   const steps = [
     { title: "CSV прийнято", hint: "структура і розмір" },
     { title: "Якість перевірено", hint: "пропуски, дублікати" },
@@ -112,12 +112,10 @@ function renderWorkflow(activePage) {
   strip.className = "workflow-strip";
   steps.forEach((step, index) => {
     const item = document.createElement("div");
-    item.className = "workflow-step";
-    if (index < activeIndex) {
-      item.classList.add("done");
-    }
-    if (index === activeIndex) {
-      item.classList.add("active");
+    item.className = "workflow-step pending";
+    item.dataset.workflowIndex = String(index);
+    if (index === currentIndex) {
+      item.classList.add("current");
     }
     appendTextElement(item, "span", String(index + 1), "workflow-index");
     const textWrap = document.createElement("span");
@@ -128,6 +126,48 @@ function renderWorkflow(activePage) {
     strip.appendChild(item);
   });
   heading.after(strip);
+  refreshWorkflow();
+}
+
+function updateWorkflowStatus(steps) {
+  const strip = document.getElementById("workflowStrip");
+  if (!strip || !Array.isArray(steps)) {
+    return;
+  }
+  steps.forEach((step, index) => {
+    const item = strip.querySelector(`[data-workflow-index="${index}"]`);
+    if (!item) {
+      return;
+    }
+    const status = step.status || "pending";
+    item.classList.remove("pending", "done", "active", "current-done");
+    item.classList.add(status);
+    if (item.classList.contains("current") && status === "done") {
+      item.classList.add("current-done");
+    }
+    const title = item.querySelector("strong");
+    const hint = item.querySelector("small");
+    if (title && step.step) {
+      title.textContent = step.step;
+    }
+    if (hint && step.detail) {
+      hint.textContent = step.detail;
+    }
+  });
+}
+
+async function refreshWorkflow() {
+  const strip = document.getElementById("workflowStrip");
+  if (!strip || !getToken()) {
+    return;
+  }
+  try {
+    const data = await apiRequest("/workflow/status", { method: "GET" });
+    setDatasetContextFromPayload(data, { skipWorkflowRefresh: true });
+    updateWorkflowStatus(data.steps || []);
+  } catch (error) {
+    // No dataset yet or the server is unavailable; keep the workflow in its pending state.
+  }
 }
 
 function renderNav(activePage) {
@@ -145,15 +185,15 @@ function renderNav(activePage) {
   nav.appendChild(navTitle);
 
   const links = [
-    { href: "upload.html?v=20260614-1", text: "1. Дані", key: "upload" },
-    { href: "clean.html?v=20260614-1", text: "2. Очищення", key: "clean" },
-    { href: "dashboard.html?v=20260614-1", text: "3. Профіль", key: "dashboard" },
-    { href: "outliers.html?v=20260614-1", text: "4. Викиди", key: "outliers" },
-    { href: "analysis.html?v=20260614-1", text: "5. Аналіз", key: "analysis" },
-    { href: "risk.html?v=20260614-1", text: "6. Рейтинг", key: "risk" },
-    { href: "modeling.html?v=20260614-1", text: "7. Моделі", key: "modeling" },
-    { href: "report.html?v=20260614-1", text: "8. Звіт", key: "report" },
-    { href: "history.html?v=20260614-1", text: "Історія", key: "history" }
+    { href: "upload.html?v=20260621-2", text: "1. Дані", key: "upload" },
+    { href: "clean.html?v=20260621-2", text: "2. Очищення", key: "clean" },
+    { href: "dashboard.html?v=20260621-2", text: "3. Профіль", key: "dashboard" },
+    { href: "outliers.html?v=20260621-2", text: "4. Викиди", key: "outliers" },
+    { href: "analysis.html?v=20260621-2", text: "5. Аналіз", key: "analysis" },
+    { href: "risk.html?v=20260621-2", text: "6. Рейтинг", key: "risk" },
+    { href: "modeling.html?v=20260621-2", text: "7. Моделі", key: "modeling" },
+    { href: "report.html?v=20260621-2", text: "8. Звіт", key: "report" },
+    { href: "history.html?v=20260621-2", text: "Історія", key: "history" }
   ];
 
   links.forEach((item) => {
@@ -359,6 +399,9 @@ function setDatasetContextFromPayload(payload, options = {}) {
     clearDatasetScopedState();
   }
   localStorage.setItem(userStateKey("dataset/id"), datasetId);
+  if (!options.skipWorkflowRefresh && typeof refreshWorkflow === "function") {
+    refreshWorkflow();
+  }
 }
 
 function clearDatasetContext() {

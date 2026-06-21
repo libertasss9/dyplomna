@@ -47,6 +47,7 @@ from server.services.report_service import (
     build_summary_report as _compose_summary_report,
     metadata_coverage as _metadata_coverage,
     preview_records as _preview_records,
+    workflow_summary as _workflow_summary,
 )
 from server.services.statistics_service import StatisticsService
 
@@ -154,6 +155,7 @@ def _validate_column(df, column_name, numeric_only=False):
 
 def _store_history(username, action, payload):
     created_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    payload = _with_dataset_context(username, dict(payload or {}))
     save_history(str(uuid4()), username, action, payload, created_at)
 
 
@@ -164,6 +166,27 @@ def _metadata_payload(username, df):
         for column in df.columns
         if column in metadata
     }
+
+
+def _current_dataset_history(username, limit=100):
+    dataset_id = _current_dataset_id(username)
+    items = get_history(username, limit=limit)
+    if not dataset_id:
+        return []
+    return [
+        item
+        for item in items
+        if isinstance(item.get("payload"), dict) and item["payload"].get("dataset_id") == dataset_id
+    ]
+
+
+def _current_analysis_states(username):
+    result = {}
+    for key in ("analysis/latest", "risk/latest", "modeling/latest", "report/latest"):
+        state = get_analysis_state(username, key)
+        if state and _state_belongs_to_current_dataset(username, state):
+            result[key] = state["payload"]
+    return result
 
 
 def _modeling_options(username, df):
@@ -179,8 +202,15 @@ def _build_summary_report(username, df):
     if latest_model_state and not _state_belongs_to_current_dataset(username, latest_model_state):
         latest_model_state = None
     latest_model_payload = latest_model_state["payload"] if latest_model_state else None
-    history_items = get_history(username, limit=100)
-    return _compose_summary_report(profile, metadata, latest_model_payload, history_items, _sample_info(username, df))
+    history_items = _current_dataset_history(username, limit=100)
+    return _compose_summary_report(
+        profile,
+        metadata,
+        latest_model_payload,
+        history_items,
+        _sample_info(username, df),
+        _current_analysis_states(username),
+    )
 
 
 def _run_modeling_job(job_id, username, payload):
@@ -677,12 +707,40 @@ def save_metadata_column(username):
     return jsonify({"metadata": get_column_metadata(username, column)})
 
 
+@app.route("/workflow/status", methods=["GET"])
+@_require_auth
+def workflow_status(username):
+    df, err = _get_user_dataframe(username)
+    if err:
+        return err
+    profile = _infer_column_roles(df)
+    metadata = _metadata_payload(username, df)
+    history_items = _current_dataset_history(username, limit=100)
+    return jsonify(
+        {
+            "dataset_id": _current_dataset_id(username),
+            "sample_info": _sample_info(username, df),
+            "steps": _workflow_summary(
+                profile,
+                metadata,
+                history_items,
+                _current_analysis_states(username),
+            ),
+        }
+    )
+
+
 @app.route("/report/summary", methods=["GET"])
 @_require_auth
 def summary_report(username):
     df, err = _get_user_dataframe(username)
     if err:
         return err
+    report_state = {
+        "dataset_id": _current_dataset_id(username),
+        "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
+    save_analysis_state(username, "report/latest", report_state)
     report = _build_summary_report(username, df)
     report["dataset_id"] = _current_dataset_id(username)
     report["sample_info"] = _sample_info(username, df)
